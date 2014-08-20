@@ -64,11 +64,12 @@ for team in [
     games = soup.find_all('div', class_='schedules-list-hd pre')
     for game in games:
         date       = game.find(class_='date').text
+        week       = int(game.find(class_='week').text)
         time       = game.find(class_='time').text
         opponent   = game.find(class_=re.compile(r'^team-name.*')).text
         networks   = ' / '.join([s['title'] for s in game.find(class_='list-matchup-row-tv').find_all('span')])
         at_vs      = 'vs' if 'away' in game.find_all(class_=re.compile(r'^team-name.*'))[0]['class'] else 'at'
-        print date, time, '%-20s' % networks, '%-4s' % at_vs, opponent
+        print '%2d' % week, date, time, '%-20s' % networks, '%-4s' % at_vs, opponent
 
 
 try:
