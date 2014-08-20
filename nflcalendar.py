@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 
+import sys
 import requests
 import os
 import re
 from bs4 import BeautifulSoup
 
-for team in [
+TEAMS =  [
 # AFC
     # East
         'Bills'     ,
@@ -48,7 +49,13 @@ for team in [
         'Rams'      ,
         '49ers'     ,
         'Seahawks'  ,
-]:
+]
+
+teams = sys.argv[1:]
+if not teams:
+    teams = TEAMS
+
+for team in teams:
     if not os.path.isdir('html'):
         os.mkdir('html')
 
