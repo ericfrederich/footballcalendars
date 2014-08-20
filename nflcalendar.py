@@ -51,38 +51,62 @@ TEAMS =  [
         'Seahawks'  ,
 ]
 
-teams = sys.argv[1:]
-if not teams:
-    teams = TEAMS
+def make_calendar(team, data):
+    with open(os.path.join('calendars', team + '.ics'), 'w') as fout:
 
-for team in teams:
-    if not os.path.isdir('html'):
-        os.mkdir('html')
+        print >> fout, 'BEGIN:VCALENDAR'
+        print >> fout, 'VERSION:1.0'
 
-    fname = os.path.join('html', team)
-    if not os.path.isfile(fname):
-        print "don't have file %s... requesting" % team
-        r = requests.get('http://www.nfl.com/schedules/2014/REG/' + team)
-        with open(fname, 'w') as fout:
-            fout.write(r.text)
+        #for desc, year, month, day, hour, minute, title, network in data:
+        for week, month, day, hour, minute, networks, at_vs, opponent in data:
 
-    soup = BeautifulSoup(open(fname))
-    print '---', team, '---'
-    games = soup.find_all('div', class_='schedules-list-hd pre')
-    for game in games:
-        date       = game.find(class_='date').text
-        week       = int(game.find(class_='week').text)
-        time       = game.find(class_='time').text
-        opponent   = game.find(class_=re.compile(r'^team-name.*')).text
-        networks   = ' / '.join([s['title'] for s in game.find(class_='list-matchup-row-tv').find_all('span')])
-        at_vs      = 'vs' if 'away' in game.find_all(class_=re.compile(r'^team-name.*'))[0]['class'] else 'at'
-        print '%2d' % week, date, time, '%-20s' % networks, '%-4s' % at_vs, opponent
+            month = {'Sep':9,'Oct':10,'Nov':11,'Dec':12}[month]
+            day     = int(day)
+            hour    = int(hour)
+            minute  = int(minute)
+
+            print >> fout, 'BEGIN:VEVENT'
+            print >> fout, 'DTSTART:%s'          % '%04d%02d%02dT%02d%02d00' % (2014, month, day, hour+12, minute)
+            print >> fout, 'DTEND:%s'            % '%04d%02d%02dT%02d%02d00' % (2014, month, day, hour+15, minute)
+            print >> fout, 'SUMMARY:%s %s %s'    % (team, at_vs, opponent)
+            print >> fout, 'LOCATION:%s'         % networks
+            print >> fout, 'DESCRIPTION:Game %s' % week
+            print >> fout, 'PRIORITY:3'
+            print >> fout, 'END:VEVENT'
+
+        print >> fout, 'END:VCALENDAR'
 
 
-try:
-    import readline
-except ImportError:
-    print "Module readline not available."
-else:
-    import rlcompleter
-    readline.parse_and_bind("tab: complete")
+if __name__ == '__main__':
+    if not os.path.isdir('html'     ): os.mkdir('html'     )
+    if not os.path.isdir('calendars'): os.mkdir('calendars')
+
+    teams = sys.argv[1:]
+    if not teams:
+        teams = TEAMS
+    
+    for team in teams:
+
+        fname = os.path.join('html', team)
+        if not os.path.isfile(fname):
+            print "don't have file %s... requesting" % team
+            r = requests.get('http://www.nfl.com/schedules/2014/REG/' + team)
+            with open(fname, 'w') as fout:
+                fout.write(r.text)
+
+        soup = BeautifulSoup(open(fname))
+        print '---', team, '---'
+        games = soup.find_all('div', class_='schedules-list-hd pre')
+        data = []
+        for game in games:
+            month, day   = game.find(class_='date').text.split()
+            week         = int(game.find(class_='week').text)
+            hour, minute = game.find(class_='time').text.split(':')
+            opponent     = game.find(class_=re.compile(r'^team-name.*')).text
+            networks     = ' / '.join([s['title'] for s in game.find(class_='list-matchup-row-tv').find_all('span')])
+            at_vs        = 'vs' if 'away' in game.find_all(class_=re.compile(r'^team-name.*'))[0]['class'] else 'at'
+
+            print '%2d' % week, month, day, '%2s:%2s' % (hour, minute), '%-20s' % networks, '%-4s' % at_vs, opponent
+            data.append((week, month, day, hour, minute, networks, at_vs, opponent))
+
+        make_calendar(team, data)
