@@ -5,6 +5,9 @@ import requests
 import os
 import re
 from bs4 import BeautifulSoup
+import datetime
+
+YEAR = datetime.datetime.now().year
 
 TEAMS =  [
 # AFC
@@ -66,8 +69,8 @@ def make_calendar(team, data):
             minute  = int(minute)
 
             print >> fout, 'BEGIN:VEVENT'
-            print >> fout, 'DTSTART:%s'          % '%04d%02d%02dT%02d%02d00' % (2014, month, day, hour+12, minute)
-            print >> fout, 'DTEND:%s'            % '%04d%02d%02dT%02d%02d00' % (2014, month, day, hour+15, minute)
+            print >> fout, 'DTSTART:%s'          % '%04d%02d%02dT%02d%02d00' % (YEAR, month, day, hour+12, minute)
+            print >> fout, 'DTEND:%s'            % '%04d%02d%02dT%02d%02d00' % (YEAR, month, day, hour+15, minute)
             print >> fout, 'SUMMARY:%s %s %s'    % (team, at_vs, opponent)
             print >> fout, 'LOCATION:%s'         % networks
             print >> fout, 'DESCRIPTION:Game %s' % week
@@ -84,13 +87,13 @@ if __name__ == '__main__':
     teams = sys.argv[1:]
     if not teams:
         teams = TEAMS
-    
+
     for team in teams:
 
         fname = os.path.join('html', team)
         if not os.path.isfile(fname):
             print "don't have file %s... requesting" % team
-            r = requests.get('http://www.nfl.com/schedules/2014/REG/' + team)
+            r = requests.get('http://www.nfl.com/schedules/' + str(YEAR) + '/REG/' + team)
             with open(fname, 'w') as fout:
                 fout.write(r.text)
 
