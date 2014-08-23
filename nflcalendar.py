@@ -33,7 +33,7 @@ TEAMS =  [
         'Chargers'  ,
 # NFC
     # East
-        'Cowbows'   ,
+        'Cowboys'   ,
         'Giants'    ,
         'Eagles'    ,
         'Redskins'  ,
