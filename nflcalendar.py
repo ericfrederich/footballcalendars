@@ -55,7 +55,7 @@ TEAMS =  [
 ]
 
 def make_calendar(team, data):
-    with open(os.path.join('calendars', team + '.ics'), 'w') as fout:
+    with open(os.path.join('calendars', str(YEAR), team + '.ics'), 'w') as fout:
 
         print >> fout, 'BEGIN:VCALENDAR'
         print >> fout, 'VERSION:1.0'
@@ -63,10 +63,13 @@ def make_calendar(team, data):
         #for desc, year, month, day, hour, minute, title, network in data:
         for week, month, day, hour, minute, networks, at_vs, opponent in data:
 
-            month = {'Sep':9,'Oct':10,'Nov':11,'Dec':12}[month]
+            month = {'Sep':9,'Oct':10,'Nov':11,'Dec':12,'Jan':1}[month]
             day     = int(day)
             hour    = int(hour)
             minute  = int(minute)
+            year = YEAR
+            if month < 9:
+                year += 1
 
             print >> fout, 'BEGIN:VEVENT'
             print >> fout, 'DTSTART:%s'          % '%04d%02d%02dT%02d%02d00' % (YEAR, month, day, hour+12, minute)
@@ -82,7 +85,7 @@ def make_calendar(team, data):
 
 if __name__ == '__main__':
     if not os.path.isdir('html'     ): os.mkdir('html'     )
-    if not os.path.isdir('calendars'): os.mkdir('calendars')
+    if not os.path.isdir(os.path.join('calendars', str(YEAR))): os.mkdir(os.path.join('calendars', str(YEAR)))
 
     teams = sys.argv[1:]
     if not teams:
@@ -97,7 +100,7 @@ if __name__ == '__main__':
             with open(fname, 'w') as fout:
                 fout.write(r.text)
 
-        soup = BeautifulSoup(open(fname))
+        soup = BeautifulSoup(open(fname), 'lxml')
         print '---', team, '---'
         games = soup.find_all('div', class_='schedules-list-hd pre')
         data = []
