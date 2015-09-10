@@ -113,6 +113,10 @@ if __name__ == '__main__':
             at_vs        = 'vs' if 'away' in game.find_all(class_=re.compile(r'^team-name.*'))[0]['class'] else 'at'
 
             print '%2d' % week, month, day, '%2s:%2s' % (hour, minute), '%-20s' % networks, '%-4s' % at_vs, opponent
-            data.append((week, month, day, hour, minute, networks, at_vs, opponent))
+            row = (week, month, day, hour, minute, networks, at_vs, opponent)
 
+            # the "next game" will be repeated at the top so check for duplicates
+            if row not in data:
+                data.append(row)
+        
         make_calendar(team, data)
