@@ -98,7 +98,7 @@ if __name__ == '__main__':
             print "don't have file %s... requesting" % team
             r = requests.get('http://www.nfl.com/schedules/' + str(YEAR) + '/REG/' + team)
             with open(fname, 'w') as fout:
-                fout.write(r.text)
+                fout.write(r.text.encode('utf-8'))
 
         soup = BeautifulSoup(open(fname), 'lxml')
         print '---', team, '---'
